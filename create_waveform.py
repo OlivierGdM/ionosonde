@@ -20,7 +20,6 @@ doi:10.5194/amt-9-829-2016, 2016.
 from argparse import ArgumentParser
 import numpy as n
 import os
-import scipy.signal
 import matplotlib.pyplot as plt
 import iono_config
 import scipy.signal as ss
@@ -33,7 +32,7 @@ def lpf(dec=10, om_factor=1.0, filter_len=4):
     m=n.array(n.arange(filter_len*dec), dtype=n.float32)
     m=m-n.mean(m)
     # windowed low pass filter
-    wfun=n.array(ss.hann(len(m))*n.sin(om0*(m+1e-6))/(n.pi*(m+1e-6)), dtype=n.complex64)
+    wfun=n.array(ss.windows.hann(len(m))*n.sin(om0*(m+1e-6))/(n.pi*(m+1e-6)), dtype=n.complex64)
     return(wfun)
 
 
@@ -114,7 +113,7 @@ def filter_waveform(waveform,
 #    print("Searching for filter length")
     while power_outside_band > max_power_outside_band:
 
-        w[0:fl] = scipy.signal.flattop(fl)
+        w[0:fl] = ss.windows.flattop(fl)
         # filter
         aa = n.fft.ifft(n.fft.fft(w) * waveform_f)
         # scale maximum amplitude to unity
@@ -231,7 +230,7 @@ def barker_to_file(
     print(len(a))
     w = n.zeros([oversample * clen], dtype=n.complex64)
     fl = (int(2*oversample))
-    w[0:fl] = scipy.signal.blackmanharris(fl)
+    w[0:fl] = ss.windows.blackmanharris(fl)
     aa = n.fft.ifft(n.fft.fft(w) * n.fft.fft(a))
     a = aa / n.max(n.abs(aa))
     a = n.array(a, dtype=n.complex64)
